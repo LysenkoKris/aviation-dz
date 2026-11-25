@@ -1,0 +1,718 @@
+{
+  "info": {
+    "name": "Авиаперевозки",
+    "description": "Запускать сверху вниз. Приложение должно работать на http://localhost:8080.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    }
+  ],
+  "item": [
+    {
+      "name": "Просмотр",
+      "item": [
+        {
+          "name": "Самолёты от 300 мест",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const registrations = pm.response.json().map(item => item.registrationNumber);",
+                  "pm.test('есть RA-96002, нет RA-73001', function () {",
+                  "    pm.expect(registrations).to.include('RA-96002');",
+                  "    pm.expect(registrations).to.not.include('RA-73001');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/aircraft/by-capacity?minCapacity=300",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "aircraft", "by-capacity"],
+              "query": [
+                {
+                  "key": "minCapacity",
+                  "value": "300"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Рейсы со статусом SCHEDULED",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const flights = pm.response.json();",
+                  "const numbers = flights.map(item => item.flightNumber);",
+                  "pm.test('есть SU100 и SU200', function () {",
+                  "    pm.expect(numbers).to.include('SU100');",
+                  "    pm.expect(numbers).to.include('SU200');",
+                  "    flights.forEach(item => pm.expect(item.aircraft.registrationNumber).to.be.a('string'));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/flights/by-status?status=SCHEDULED",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "flights", "by-status"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "SCHEDULED"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Рейсы в LED",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const flights = pm.response.json();",
+                  "pm.test('прилёт LED, есть SU100', function () {",
+                  "    pm.expect(flights.map(item => item.flightNumber)).to.include('SU100');",
+                  "    flights.forEach(item => pm.expect(item.arrivalAirport).to.eql('LED'));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/flights/search?arrivalAirport=led",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "flights", "search"],
+              "query": [
+                {
+                  "key": "arrivalAirport",
+                  "value": "led"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Рейсы из SVO",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const flights = pm.response.json();",
+                  "pm.test('вылет SVO и статус SCHEDULED', function () {",
+                  "    pm.expect(flights.length).to.be.above(0);",
+                  "    flights.forEach(function (item) {",
+                  "        pm.expect(item.departureAirport).to.eql('SVO');",
+                  "        pm.expect(item.status).to.eql('SCHEDULED');",
+                  "    });",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/flights/search?departureAirport=svo&status=SCHEDULED",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "flights", "search"],
+              "query": [
+                {
+                  "key": "departureAirport",
+                  "value": "svo"
+                },
+                {
+                  "key": "status",
+                  "value": "SCHEDULED"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Рейсы за 2 декабря",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const numbers = pm.response.json().map(item => item.flightNumber);",
+                  "pm.test('есть SU200, нет SU100', function () {",
+                  "    pm.expect(numbers).to.include('SU200');",
+                  "    pm.expect(numbers).to.not.include('SU100');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/flights/search?departFrom=2026-12-02T00:00:00&departTo=2026-12-02T23:59:59",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "flights", "search"],
+              "query": [
+                {
+                  "key": "departFrom",
+                  "value": "2026-12-02T00:00:00"
+                },
+                {
+                  "key": "departTo",
+                  "value": "2026-12-02T23:59:59"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Рейс 1",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const flight = pm.response.json();",
+                  "pm.test('SU100 на самолёте RA-73001', function () {",
+                  "    pm.expect(flight.flightNumber).to.eql('SU100');",
+                  "    pm.expect(flight.aircraft.registrationNumber).to.eql('RA-73001');",
+                  "    pm.expect(flight.aircraft.model).to.eql('Airbus A320');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/flights/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "flights", "1"]
+            }
+          }
+        },
+        {
+          "name": "Билеты эконом",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const ticket = pm.response.json().find(item => item.seatNumber === '12A');",
+                  "pm.test('билет 12A, Анна, рейс SU100', function () {",
+                  "    pm.expect(ticket).to.be.an('object');",
+                  "    pm.expect(ticket.seatClass).to.eql('ECONOMY');",
+                  "    pm.expect(ticket.passenger.fullName).to.eql('Анна Соколова');",
+                  "    pm.expect(ticket.flight.flightNumber).to.eql('SU100');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/tickets?seatClass=ECONOMY",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tickets"],
+              "query": [
+                {
+                  "key": "seatClass",
+                  "value": "ECONOMY"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Пассажир 1",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const passenger = pm.response.json();",
+                  "pm.test('счёт Анны на 7500 миль', function () {",
+                  "    pm.expect(passenger.fullName).to.eql('Анна Соколова');",
+                  "    pm.expect(passenger.bonusAccount.accountNumber).to.eql('BA-4510123456');",
+                  "    pm.expect(passenger.bonusAccount.milesBalance).to.eql(7500);",
+                  "    pm.expect(passenger.bonusAccount.tier).to.eql('BASIC');",
+                  "});",
+                  "pm.collectionVariables.set('annaAccountId', passenger.bonusAccount.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/passengers/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "passengers", "1"]
+            }
+          }
+        },
+        {
+          "name": "Бонусный счёт пассажира 1",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('тот же счёт', function () {",
+                  "    pm.expect(pm.response.json().id).to.eql(Number(pm.collectionVariables.get('annaAccountId')));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/passengers/1/bonus-account",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "passengers", "1", "bonus-account"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Добавление",
+      "item": [
+        {
+          "name": "Новый самолёт",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('suffix', Date.now().toString().slice(-6));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "const aircraft = pm.response.json();",
+                  "pm.test('номер записан заглавными', function () {",
+                  "    pm.expect(aircraft.registrationNumber).to.eql('RA-' + pm.collectionVariables.get('suffix'));",
+                  "    pm.expect(aircraft.seatsCapacity).to.eql(98);",
+                  "});",
+                  "pm.collectionVariables.set('aircraftId', aircraft.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"registrationNumber\": \"ra-{{suffix}}\",\n  \"model\": \"Sukhoi Superjet 100\",\n  \"seatsCapacity\": 98\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/aircraft",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "aircraft"]
+            }
+          }
+        },
+        {
+          "name": "Новый рейс",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "const flight = pm.response.json();",
+                  "pm.test('рейс на созданном самолёте', function () {",
+                  "    pm.expect(flight.status).to.eql('SCHEDULED');",
+                  "    pm.expect(flight.departureAirport).to.eql('SVO');",
+                  "    pm.expect(flight.arrivalAirport).to.eql('KZN');",
+                  "    pm.expect(flight.aircraft.id).to.eql(Number(pm.collectionVariables.get('aircraftId')));",
+                  "});",
+                  "pm.collectionVariables.set('flightId', flight.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"flightNumber\": \"DZ{{suffix}}\",\n  \"departureAirport\": \"svo\",\n  \"arrivalAirport\": \"kzn\",\n  \"departureTime\": \"2026-12-20T10:00:00\",\n  \"arrivalTime\": \"2026-12-20T12:00:00\",\n  \"aircraftId\": {{aircraftId}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/flights",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "flights"]
+            }
+          }
+        },
+        {
+          "name": "Новый пассажир",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "const passenger = pm.response.json();",
+                  "pm.test('счёт пустой', function () {",
+                  "    pm.expect(passenger.bonusAccount.milesBalance).to.eql(0);",
+                  "    pm.expect(passenger.bonusAccount.tier).to.eql('BASIC');",
+                  "    pm.expect(passenger.bonusAccount.accountNumber).to.eql('BA-' + pm.collectionVariables.get('suffix') + '1234');",
+                  "});",
+                  "pm.collectionVariables.set('passengerId', passenger.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"passportNumber\": \"{{suffix}}1234\",\n  \"firstName\": \"Денис\",\n  \"lastName\": \"Тестов\",\n  \"email\": \"denis{{suffix}}@example.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/passengers",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "passengers"]
+            }
+          }
+        },
+        {
+          "name": "Новый билет",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "const ticket = pm.response.json();",
+                  "pm.test('бизнес, 10000 миль, рейс SU200', function () {",
+                  "    pm.expect(ticket.seatNumber).to.eql('S' + pm.collectionVariables.get('suffix'));",
+                  "    pm.expect(ticket.seatClass).to.eql('BUSINESS');",
+                  "    pm.expect(ticket.milesAccrued).to.eql(10000);",
+                  "    pm.expect(ticket.flight.flightNumber).to.eql('SU200');",
+                  "    pm.expect(ticket.passenger.id).to.eql(Number(pm.collectionVariables.get('passengerId')));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"passengerId\": {{passengerId}},\n  \"flightId\": 2,\n  \"seatNumber\": \"s{{suffix}}\",\n  \"seatClass\": \"BUSINESS\",\n  \"price\": 5000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/tickets",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tickets"]
+            }
+          }
+        },
+        {
+          "name": "Счёт после билета",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "const account = pm.response.json().bonusAccount;",
+                  "pm.test('10000 миль, уровень SILVER', function () {",
+                  "    pm.expect(account.milesBalance).to.eql(10000);",
+                  "    pm.expect(account.tier).to.eql('SILVER');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/passengers/{{passengerId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "passengers", "{{passengerId}}"]
+            }
+          }
+        },
+        {
+          "name": "Второй билет на тот же рейс",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('409', function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "",
+                  "pm.test('пассажир уже на рейсе', function () {",
+                  "    pm.expect(pm.response.json().message).to.include('уже зарегистрирован');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"passengerId\": {{passengerId}},\n  \"flightId\": 2,\n  \"seatNumber\": \"t{{suffix}}\",\n  \"seatClass\": \"ECONOMY\",\n  \"price\": 1000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/tickets",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tickets"]
+            }
+          }
+        },
+        {
+          "name": "Билет на место 12A",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('409', function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "",
+                  "pm.test('место занято', function () {",
+                  "    pm.expect(pm.response.json().message).to.include('Место уже занято');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"passengerId\": 2,\n  \"flightId\": 1,\n  \"seatNumber\": \"12A\",\n  \"seatClass\": \"ECONOMY\",\n  \"price\": 1000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/tickets",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tickets"]
+            }
+          }
+        },
+        {
+          "name": "Самолёт без полей",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "const body = pm.response.json();",
+                  "pm.test('есть ошибки по полям', function () {",
+                  "    pm.expect(body.message).to.eql('Ошибка валидации');",
+                  "    pm.expect(body.fieldErrors.model).to.be.a('string');",
+                  "    pm.expect(body.fieldErrors.registrationNumber).to.be.a('string');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/aircraft",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "aircraft"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
